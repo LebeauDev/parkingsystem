@@ -9,6 +9,7 @@ import com.parkit.parkingsystem.util.InputReaderUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.text.DecimalFormat;
 import java.util.Date;
 
 public class ParkingService {
@@ -33,6 +34,7 @@ public class ParkingService {
             if(parkingSpot !=null && parkingSpot.getId() > 0){
                 String vehicleRegNumber = getVehichleRegNumber();
                 parkingSpot.setAvailable(false);
+                //parkingSpot.setId(parkingSpot.getId() + 1);
                 parkingSpotDAO.updateParking(parkingSpot);//allot this parking space and mark it's availability as false
 
                 Date inTime = new Date();
@@ -43,14 +45,16 @@ public class ParkingService {
                 ticket.setVehicleRegNumber(vehicleRegNumber);
                 ticket.setPrice(0);
                 ticket.setInTime(inTime);
+                //System.out.println(ticket.getInTime());
                 ticket.setOutTime(null);
                 ticketDAO.saveTicket(ticket);
                 System.out.println("Generated Ticket and saved in DB");
-                System.out.println("Please park your vehicle in spot number:"+parkingSpot.getId());
-                System.out.println("Recorded in-time for vehicle number:"+vehicleRegNumber+" is:"+inTime);
+                System.out.println("Please park your vehicle in spot number:"+ parkingSpot.getId());
+                System.out.println("Recorded in-time for vehicle number:"+vehicleRegNumber+" is:"+ticket.getInTime());
             }
         }catch(Exception e){
             logger.error("Unable to process incoming vehicle",e);
+            
         }
     }
 
@@ -74,11 +78,12 @@ public class ParkingService {
             logger.error("Error parsing user input for type of vehicle", ie);
         }catch(Exception e){
             logger.error("Error fetching next available parking slot", e);
+            
         }
         return parkingSpot;
     }
 
-    private ParkingType getVehichleType(){
+    public ParkingType getVehichleType(){
         System.out.println("Please select vehicle type from menu");
         System.out.println("1 CAR");
         System.out.println("2 BIKE");
@@ -96,19 +101,41 @@ public class ParkingService {
             }
         }
     }
+    
+    
+       
 
     public void processExitingVehicle() {
         try{
+        	        	        	
             String vehicleRegNumber = getVehichleRegNumber();
             Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
             Date outTime = new Date();
             ticket.setOutTime(outTime);
-            fareCalculatorService.calculateFare(ticket);
+            
+            /*long inHour = ticket.getInTime().getTime();
+            long outHour = ticket.getOutTime().getTime();
+
+            //TODO: Some tests are failing here. Need to check if this logic is correct
+            long duration_0 = outHour - inHour;
+            float duration = (float)duration_0/(1000*60*60);
+            
+            if(duration <= 0.5) {
+            	ticket.setPrice(0);
+            }*/
+            
+ 
+            
+            fareCalculatorService.calculateFare(ticket, vehicleRegNumber);
+            
+            
             if(ticketDAO.updateTicket(ticket)) {
                 ParkingSpot parkingSpot = ticket.getParkingSpot();
                 parkingSpot.setAvailable(true);
                 parkingSpotDAO.updateParking(parkingSpot);
-                System.out.println("Please pay the parking fare:" + ticket.getPrice());
+                DecimalFormat df = new DecimalFormat("#.##");
+                
+                System.out.println("Please pay the parking fare:" + df.format(ticket.getPrice()));
                 System.out.println("Recorded out-time for vehicle number:" + ticket.getVehicleRegNumber() + " is:" + outTime);
             }else{
                 System.out.println("Unable to update ticket information. Error occurred");
