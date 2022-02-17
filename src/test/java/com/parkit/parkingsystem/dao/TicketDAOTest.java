@@ -27,8 +27,7 @@ public class TicketDAOTest {
 		
 		TicketDAO ticketDao = new TicketDAO();
 		
-		ParkingSpotDAO p = new ParkingSpotDAO();
-        
+		        
         assertEquals( ticketDao.saveTicket(ticket), false);
 	
 	
@@ -47,8 +46,7 @@ public class TicketDAOTest {
 		
 		TicketDAO ticketDao = new TicketDAO();
 		
-		ParkingSpotDAO p = new ParkingSpotDAO();
-        
+
         assertEquals( ticketDao.saveTicket(ticket), false);
 	
 	
@@ -67,9 +65,7 @@ public class TicketDAOTest {
 		ticket.setVehicleRegNumber("ABC");
 		
 		TicketDAO ticketDao = new TicketDAO();
-		
-		ParkingSpotDAO p = new ParkingSpotDAO();
-        
+		        
         assertEquals( ticketDao.updateTicket(ticket), false);
 	
 	
